@@ -1,0 +1,188 @@
+//prontera,155,127,4	script	CheckFunc1::CheckFuncInv1	951,3,3,{
+//	Function dispmess;
+//	set .text, .text + 1;
+//	dispbottom "my text: " + atoi(.text);
+//	dispmess;
+//	close;
+
+//	function	dispmess	{
+//		set .text, .text + 1;
+//		dispbottom "message " + atoi(.text);
+//	return;
+//	}
+//}
+
+prontera,155,127,4	script	CheckFunc1::CheckFuncInv1	951,3,3,{
+	dispbottom "Debug ncp start";
+	dispbottom "Char location: " + .char_location$ + " x: " + atoi(.char_i) + " y: " + atoi(.char_j);
+	close;
+	OnInit:
+	getmapxy .npc_location$,.i,.j,1;
+	//dispbottom "Npc location: " + .npc_location$ + " x: " + atoi(.i) + " y: " + atoi(.j);
+	set .step, 3;
+	//geo 1368
+	//monster .npc_location$,.i + .step,.j,"Debug monster",2058,1,"NPCNAME::OnPoringKilled";
+	//monster .npc_location$,.i - .step,.j,"Debug monster",2058,1,"NPCNAME::OnPoringKilled";
+	//monster .npc_location$,.i,.j + .step,"Debug monster",2058,1,"NPCNAME::OnPoringKilled";
+	//monster .npc_location$,.i,.j - .step,"Debug monster",2058,1,"NPCNAME::OnPoringKilled";
+	.GID = $@mobid[0];
+	close;
+	OnTouch:
+	getmapxy .char_location$,.char_i,.char_j,0;
+	close;
+}
+
+prt_fild08,265,100,4	script	NpcEffects::NpcEffectsInv1	951,3,3,{
+	dispbottom strcharinfo(1);
+	@party_id = getcharid(1);
+	dispbottom @party_id;
+	party_destroy(getcharid(1));
+	dispbottom "Party has been destroyed";
+	//while(1==1){
+	//	npcskilleffect "MG_THUNDERSTORM",1,.i - 10,.j - 10;
+	//	npcskilleffect "MG_THUNDERSTORM",1,.i + 10,.j - 10;
+	//	sleep 865;
+	//}
+	close;
+	OnInit:
+	getmapxy .npc_location$,.i,.j,1;
+	close;
+}
+
+prt_fild08,205,100,4	script	MovingMonsters::CheckSiteInv1	951,3,3,{
+	set .step, 4;
+	function create_monsters;
+	.monster_count = 10;
+	dispbottom "Moving monsters script start";
+	getmapxy .@char_location$,.@char_i,.@char_j,0;
+	//set .@char_i, .@current_char_i;
+	//set .@char_j, .@current_char_j;
+	//.@char_i = .@current_char_i;
+	//.@char_j = .@current_char_j;
+	dispbottom "Char location: " + .@char_location$ + " x: " + atoi(.@char_i) + " y: " + atoi(.@char_j);
+	getmapxy .npc_location$,.i,.j,1;
+	//monster .npc_location$,.i,.j,"AI 0","Poring",2058,1;
+	//monster .npc_location$,.i ,.j,"Debug monster",2058,.monster_count;
+
+	create_monsters(.GID[0]);
+	create_monsters(.GID1[0]);
+	create_monsters(.GID2[0]);
+	create_monsters(.GID3[0]);
+
+	//freeloop(1); // enable script to loop freely
+	// be careful with what you do here
+	dispbottom "Start big loop";
+	.@bigloop = 1000000;
+	.@monster_count = getarraysize(.GID);
+	.@walk_step = 5;
+	dispbottom "Monster count: " + .@monster_count;
+	for ( .@i = 0; .@i < .@bigloop; .@i++ ) {
+		sleep 500;
+		callfunc("mobVerticalWall", .GID, .i - .monster_count/2 - 1, .j + .@i + .monster_count/2); //LEFT WALL
+		callfunc("mobVerticalWall", .GID1, .i + .monster_count/2, .j + .@i + .monster_count/2); //RIGHT WALL
+		callfunc("mobHorizontalWall", .GID2, .i, .j + .@i); //BOTTOM
+		callfunc("mobHorizontalWall", .GID3, .i, .j + .@i + .monster_count - 1); //TOP
+		
+
+		//getmapxy .@char_location$,.@char_i,.@char_j,0;
+		////dispbottom "Char location in loop: " + .@char_location$ + " x: " + atoi(.@char_i) + " y: " + atoi(.@char_j);
+		//for ( .@mob_id = 0; .@mob_id < .@monster_count; .@mob_id++ ){
+		//	switch(.@mob_id){
+		//		case 0:
+		//			.@step_i = -1;
+		//			.@step_j = -1;
+		//		break;
+		//		case 1:
+		//			.@step_i = -1;
+		//			.@step_j = 1;
+		//		break;
+		//		case 2:
+		//			.@step_i = 1;
+		//			.@step_j = -1;
+		//		break;
+		//		case 3:
+		//			.@step_i = 1;
+		//			.@step_j = 1;
+		//		break;
+		//	}
+		//	unitwalk .GID[.@mob_id], .@char_i + .@step_i*.step, .@char_j + .@step_j*.step;	
+		//}
+		//close;
+		// will sleep the script for 1ms when detect an infinity loop to 
+		// let rAthena do what it needs to do (socket, timer, process, etc.)
+	}
+	close;
+	OnTouch:
+	close;
+
+	function	create_monsters	{
+		//copyarray .@GID[0], getelementofarray( getarg(0), 0 ), getarraysize( getarg(0) );
+		for ( .@a = 0; .@a < 1; .@a++){
+			for ( .@monster_id = 0; .@monster_id < .monster_count; .@monster_id++ ){
+				dispbottom "WTF?!";
+				//monster "prontera",.i,.j,"AI " + atoi(.@i),2058,1,"",0,.@i;
+				switch(.@monster_id){
+					case 0:
+						.@step_i = -1;
+						.@step_j = -1;
+					break;
+					case 1:
+						.@step_i = -1;
+						.@step_j = 1;
+					break;
+					case 2:
+						.@step_i = 1;
+						.@step_j = -1;
+					break;
+					case 3:
+						.@step_i = 1;
+						.@step_j = 1;
+					break;
+				}
+				.@monster_id_temp = .@monster_id + .@monster_count * .@a;
+				dispbottom "WTF?!";
+				monster .npc_location$,.i,.j,"Monster " + atoi(.@monster_id),2058,1;
+				.@GID[.@monster_id_temp] = $@mobid[0]; // Store and modify the 10th Poring spawned to make him stronger!
+				set getelementofarray( getarg(0), .@monster_id ), $@mobid[0];
+				// Save the strong Poring's mob data in the @por_arr[] variable. (@por_arr[1] being level, @por_arr[13] being class, etc.)
+				// With this data we can have the NPC display or manipulate it how we want. This does not have to be ran before 'setunitdata'.
+				getunitdata .@GID[.@monster_id_temp],@por_arr;
+				// Set the max HP of the Poring to 1000 (current HP will also get updated to 1000).
+				setunitdata .@GID[.@monster_id_temp],UMOB_MAXHP,10000;
+				dispbottom "Hero id: " + atoi(getcharid(3));
+				dispbottom "Mob gid: " + atoi(.@GID[.@monster_id_temp]);
+				dispbottom "Monster id: " + atoi(.@monster_id_temp);
+				//unitwalkto getcharid(3),.GID;
+				//unitwalkto $@mobid[0],getcharid(3);
+				//unitwalk .GID[.@monster_id_temp], .@char_i + .@step_i*.step, .@char_j + .@step_j*.step - .@a;
+			}
+		}
+		return .@GID;
+	}
+}
+
+	function	script	mobHorizontalWall	{
+		copyarray .@mob_id_arr[0], getelementofarray( getarg(0), 0 ), getarraysize( getarg(0) );
+		.@monster_count = getarraysize(.@mob_id_arr);
+		set .@center_x, getarg(1);
+		set .@center_y, getarg(2);
+		//set .@angle, getarg(2);
+		.@monster_count = getarraysize(.@mob_id_arr);
+		for ( .@mob_id = 0; .@mob_id < .@monster_count; .@mob_id++ ){
+			unitwalk .@mob_id_arr[.@mob_id], .@center_x + .@mob_id - .@monster_count/2, .@center_y;
+		}
+		return;
+	}
+
+	function	script	mobVerticalWall	{
+		copyarray .@mob_id_arr[0], getelementofarray( getarg(0), 0 ), getarraysize( getarg(0) );
+		.@monster_count = getarraysize(.@mob_id_arr);
+		set .@center_x, getarg(1);
+		set .@center_y, getarg(2);
+		//set .@angle, getarg(2);
+		.@monster_count = getarraysize(.@mob_id_arr);
+		for ( .@mob_id = 0; .@mob_id < .@monster_count; .@mob_id++ ){
+			unitwalk .@mob_id_arr[.@mob_id], .@center_x, .@center_y + .@mob_id - .@monster_count/2;
+		}
+		return;
+	}

@@ -1,0 +1,830 @@
+prontera,160,130,4	script	Lory::Simpa	951,3,3,{
+	close;
+	OnInit:
+	callfunc("initBox");
+	//set .box_type, .wooden_box;
+	close;
+	OnTouch:
+	callfunc("onTouchBox");
+	close;
+}
+
+prontera,143,133,4	script	CheckFunc1::CheckFuncInv1	951,3,3,{
+	Function dispmess;
+	set .text, .text + 1;
+	dispbottom "my text: " + atoi(.text);
+	dispmess;
+	close;
+
+	function	dispmess	{
+		set .text, .text + 1;
+		dispbottom "message " + atoi(.text);
+	return;
+	}
+}
+prontera,143,137,4	script	CheckFunc2::CheckFuncInv2	951,3,3,{
+	Function dispmess;
+	set .text, .text + 1;
+	dispbottom "my text: " + atoi(.text);
+	dispmess;
+	close;
+
+	function	dispmess	{
+		set .text, .text + 1;
+		dispbottom "message " + atoi(.text);
+	return;
+	}
+}
+
+prontera,155,125,4	script	EnableAllSimpa::EnableAllSimpas	950,{
+ 	for (set .@i, 0; .@i < getarraysize($@name$); set .@i, .@i + 1) {
+ 		dispbottom $@name$[.@i];
+ 		enablenpc $@name$[.@i];
+ 		//disbottom "Npc in list " + $@name$[0];
+ 	}
+	close;
+}
+
+//prontera,160,130,4	duplicate(Simpa)	LoryDup1::SimpaDup1	951,3,3,
+//prontera,160,120,4	duplicate(Simpa)	LoryDup2::SimpaDup2	951,3,3,
+//prontera,150,130,4	duplicate(Simpa)	LoryDup3::SimpaDup3	951,3,3,
+//prontera,150,120,4	duplicate(Simpa)	LoryDup4::SimpaDup4	951,3,3,
+
+function	script	initBox	{
+	set .key_id, 512;
+	set .special_key_id, 531;
+	set .box_breaked_status, 1;
+	set .box_not_breaked_status, 0;
+	set .no_box_status, -1;
+	set .wooden_box, 0;
+	set .metal_box, 1;
+	set .silver_box, 2;
+	set .golden_box, 3;
+	set .is_box_breaked, 0;
+	set .is_monster, rand (0,1);
+}
+
+function	script	onTouchBox	{
+	dispbottom "is_monster: " + atoi(.is_monster);
+	if(.is_monster == 1){ 
+		getmapxy .my_location$,.B_X,.B_Y,1;
+		dispbottom "X: " + .B_X + ";Y: " + B_Y;
+		monster .my_location$,.B_X,.B_Y,"Mimic",1191,1; 
+		set .is_box_breaked, 1;
+		disablenpc strnpcinfo(3);
+		close;  
+	}
+	while (countitem(.key_id) > 0) {
+		set @box_break_status, callfunc("tryBreakBox", .key_id, .special_key_id, .box_type, .is_box_breaked);
+		if( @box_break_status == .box_breaked_status ){
+			setnpctimer 0;
+			stopnpctimer;
+			disablenpc strnpcinfo(3);
+			set .is_box_breaked, 1;
+			switch(.box_type){
+			case 0:
+				callfunc("BOX_EASY");	
+				break;
+			case 1:
+				callfunc("BOX_MEDIUM");	
+				break;
+			case 2:
+				callfunc("BOX_HARD");	
+				break;
+			case 3:
+				callfunc("BOX_VERY_HARD");	
+				break;
+			}
+			
+			set .@arraysize, getarraysize($@name$);
+			set $@name$[.@arraysize], strnpcinfo(3);
+			close; 
+		}
+		else if( @box_break_status == .no_box_status ){
+			close;
+		}
+	}
+	//dispbottom "Вы видите закрытый сундук. Для его открытия нужен ключ или отмычка.";
+	dispbottom "No break tool!";
+}
+
+function	script	tryBreakBox	{
+	set .@key_id, getarg(0);
+	set .@special_key_id, getarg(1);
+	set .@box_type, getarg(2);
+	set .@str, readparam(bStr);
+	setarray .@str_table[0],119,114,109,104,99,94,89,84,79,74,69,64,59,54,49,44,39,34,29,24,19,14,9,10;
+	dispbottom "box_type: " + .@box_type;
+	switch(.@box_type){
+	case 0:
+		setarray .@open_chance[0],30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7;
+		setarray .@break_time[0],1,2,2,2,3,3,3,4,4,4,4,5,5,5,6,6,6,7,7,7,7,8,8,8;
+		setarray .@break_chance[0],2,6,10,14,18,22,26,30,34,38,42,46,50,54,58,62,66,70,74,78,82,86,90,94;
+		break;
+	case 1:
+		setarray .@open_chance[0],23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,1;
+		setarray .@break_time[0],2,3,3,3,4,4,4,5,5,5,5,6,6,6,7,7,7,8,8,8,8,9,9,9;
+		setarray .@break_chance[0],6,13,20,27,34,41,48,55,62,69,76,83,90,97,104,111,118,125,132,139,146,153,160,167;
+		break;
+	case 2:
+		setarray .@open_chance[0],16,15,14,13,13,12,11,10,9,9,8,7,6,5,4,3,3,2,2,1,1,1,1,1;
+		setarray .@break_time[0],4,5,5,5,6,6,6,7,7,7,7,8,8,8,9,9,9,10,10,10,10,11,11,11;
+		setarray .@break_chance[0],13,21,29,37,45,53,61,69,77,85,93,101,109,117,125,133,141,149,157,165,173,181,189,197;
+		break;
+	case 3:
+		setarray .@open_chance[0],10,9,9,8,8,7,7,6,6,5,5,5,4,4,3,3,2,2,2,1,1,1,1,1;
+		setarray .@break_time[0],6,7,7,7,8,8,8,9,9,9,9,10,10,10,11,11,11,12,12,12,12,13,13,13;
+		setarray .@break_chance[0],21,31,41,51,61,71,81,91,101,111,121,131,141,151,161,171,181,191,201,211,221,231,241,251;
+		break;
+	}
+	for (set .@i, 0; .@i < getarraysize(.@str_table) -1; set .@i, .@i + 1) {
+		if( .@str > .@str_table[.@i] ){
+			break;
+		}
+	}
+	// dispbottom "Вы используете отмычку для открытия сундука вероятность успеха " + atoi(.@open_chance[.@i]) + "%.  .  ."; 
+	dispbottom "Break chance " + atoi(.@open_chance[.@i]) + "%.  .  ."; 
+	progressbar "ffff00",.@break_time[.@i]; 
+	dispbottom ".@is_box_breaked: " + atoi(.@is_box_breaked);
+	if (getarg(3)){
+		// dispbottom "Сундук уже открыли.";
+		dispbottom "Box already breaked.";
+		return -1;
+	}
+	set @xbox,rand (0,100); 
+	if( @xbox < .@open_chance[.@i]){
+		// dispbottom "Попытка открыть замок отмычкой увенчалась успехом!!";
+		dispbottom "Breaked!!";
+		specialeffect 18;
+		return 1; }
+	else {
+		set @hbox,rand (1,1001); 
+		if( @hbox < .@break_chance[.@i])
+			// { dispbottom "При попытки открыть замок отмычка сломалась.  .  ."; 
+			{ dispbottom "Tool breaked.  .  ."; 
+			delitem .@key_id,1; 
+			specialeffect 100; 
+			return 0; 
+		} 
+		else {
+			// dispbottom "Попытка открыть замок отмычкой провалилась.  .  ."; 
+			{ dispbottom "Break failed.  .  ."; 
+			specialeffect 100; 
+			return 0;}
+		}	
+	}
+}
+
+//легкий сундук
+function	script	BOX_EASY	{
+	set @e,rand (500,30000);	set Zeny, Zeny + @e;	dispbottom "Найдено: "+ @e +" Zeny";
+	set @g1,rand (1,15);	
+	if (@g1 == 15){getitem 22423, 1;	dispbottom "Найдено: 1 Box Mod's";}
+	set @g2,rand (1,15);	
+	if (@g2 == 15){getitem 22424, 1;	dispbottom "Найдено: 1 Box Stat's";}
+	set @w1,rand (1,4);
+		if (@w1 < 2){set @w,rand (1,3);	getitem 984, @w;	dispbottom "Найдено: "+ @w +" Oridecon's";}
+	set @q1,rand (1,4);
+		if (@q1 < 2){set @q,rand (1,2);	getitem 985, @q;	dispbottom "Найдено: "+ @q +" Elunium's";}
+	set @z1,rand (1,2);
+		if (@z1 < 2){set @z,rand (1,3);	getitem 610, @z;	dispbottom "Найдено: "+ @z +" Yggdrasil Leaf's";}
+	set @x1,rand (1,4);
+		if (@x1 < 2){set @x,rand (1,3);	getitem 11504, @x;	dispbottom "Найдено: "+ @x +" Extra Blue Potion's";}
+	set @v1,rand (1,4);
+		if (@v1 < 2){set @v,rand (1,4);	getitem 11503, @v;	dispbottom "Найдено: "+ @v +" Extra White Potion's";}
+	set @k1,rand (1,13);
+		if (@k1 == 1){getitem 12068, 1; dispbottom "Найдено: 1 Fried Sweet Potato";}
+		else if (@k1 == 2){getitem 12063, 1; dispbottom "Найдено: 1 Fruit Mix";}
+		else if (@k1 == 3){getitem 12048, 1; dispbottom "Найдено: 1 Honey Herbal Tea";}
+		else if (@k1 == 4){getitem 12053, 1; dispbottom "Найдено: 1 Clam Soup";}
+		else if (@k1 == 5){getitem 12058, 1; dispbottom "Найдено: 1 Tentacle Cheese Gratin";}
+		else if (@k1 == 6){getitem 12043, 1; dispbottom "Найдено: 1 Bomber Steak";}	
+		else if (@k1 > 6){}	
+	return;
+}
+//средний сундук
+function	script	BOX_MEDIUM	{
+	set @e,rand (500,60000);	set Zeny, Zeny + @e;	dispbottom "Найдено: "+ @e +" Zeny";
+	set @g1,rand (1,10);	
+	if (@g1 == 6){getitem 22423, 1;	dispbottom "Найдено: 1 Box Mod's";}
+	set @g2,rand (1,10);	
+	if (@g2 == 6){getitem 22424, 1;	dispbottom "Найдено: 1 Box Stat's";}
+	set @w1,rand (1,3);
+		if (@w1 < 2){set @w,rand (1,4);	getitem 984, @w;	dispbottom "Найдено: "+ @w +" Oridecon's";}
+	set @q1,rand (1,3);
+		if (@q1 < 2){set @q,rand (1,3);	getitem 985, @q;	dispbottom "Найдено: "+ @q +" Elunium's";}
+	set @z1,rand (1,2);
+		if (@z1 < 2){set @z,rand (1,5);	getitem 610, @z;	dispbottom "Найдено: "+ @z +" Yggdrasil Leaf's";}
+	set @x1,rand (1,4);
+		if (@x1 < 2){set @x,rand (1,5);	getitem 11504, @x;	dispbottom "Найдено: "+ @x +" Extra Blue Potion's";}
+	set @v1,rand (1,4);
+		if (@v1 < 2){set @v,rand (1,7);	getitem 11503, @v;	dispbottom "Найдено: "+ @v +" Extra White Potion's";}
+	set @k1,rand (1,13);
+		if (@k1 == 1){getitem 12045, 1; dispbottom "Найдено: 1 Lutie Lady's Pancake";}
+		else if (@k1 == 2){getitem 12060, 1; dispbottom "Найдено: 1 Steamed Bat Wing in Pumpkin";}
+		else if (@k1 == 3){getitem 12055, 1; dispbottom "Найдено: 1 Spicy Fried Bao";}
+		else if (@k1 == 4){getitem 12050, 1; dispbottom "Найдено: 1 Mastela Fruit Wine";}
+		else if (@k1 == 5){getitem 12065, 1; dispbottom "Найдено: 1 Green Salad";}
+		else if (@k1 == 6){getitem 12070, 1; dispbottom "Найдено: 1 Fried Scorpion Tails";}	
+		else if (@k1 > 6){}	
+	return;
+}
+//тяжелый сундук
+function	script	BOX_HARD	{
+	set @e,rand (500,90000);	set Zeny, Zeny + @e;	dispbottom "Найдено: "+ @e +" Zeny";
+	set @g1,rand (1,5);	
+	if (@g1 == 2){getitem 22423, 1;	dispbottom "Найдено: 1 Box Mod's";}
+	set @g2,rand (1,5);	
+	if (@g2 == 2){getitem 22424, 1;	dispbottom "Найдено: 1 Box Stat's";}
+	set @w1,rand (1,2);
+		if (@w1 < 2){set @w,rand (1,5);	getitem 984, @w;	dispbottom "Найдено: "+ @w +" Oridecon's";}
+	set @q1,rand (1,2);
+		if (@q1 < 2){set @q,rand (1,4);	getitem 985, @q;	dispbottom "Найдено: "+ @q +" Elunium's";}
+	set @z1,rand (1,2);
+		if (@z1 < 2){set @z,rand (1,7);	getitem 610, @z;	dispbottom "Найдено: "+ @z +" Yggdrasil Leaf's";}
+	set @x1,rand (1,2);
+		if (@x1 < 2){set @x,rand (1,7);	getitem 11504, @x;	dispbottom "Найдено: "+ @x +" Extra Blue Potion's";}
+	set @v1,rand (1,2);
+		if (@v1 < 2){set @v,rand (1,9);	getitem 11503, @v;	dispbottom "Найдено: "+ @v +" Extra White Potion's";}
+	set @k1,rand (1,3);
+		if (@k1 == 3){  set @j1,rand (1,10);  
+						if (@j1 == 1){getitem 12072, 1; dispbottom "Найдено: 1 Whole Roast";}
+						else if (@j1 == 2){getitem 12087, 1; dispbottom "Найдено: 1 Steamed Alligator with Vegetable";}
+						else if (@j1 == 3){getitem 12082, 1; dispbottom "Найдено: 1 Sumptuous Feast";}
+						else if (@j1 == 4){getitem 12077, 1; dispbottom "Найдено: 1 Special Royal Jelly Herbal Tea";}
+						else if (@j1 == 5){getitem 12092, 1; dispbottom "Найдено: 1 Soul Haunted Bread";}
+						else if (@j1 == 6){getitem 12097, 1; dispbottom "Найдено: 1 Assorted Shish Kebob";}	  
+						else if (@j1 > 6){}}
+		else { set @ui,rand (1,135);
+				if (@ui == 1){getitem 2233, 1; dispbottom "Найдено: Circlet [1]";}
+				else if (@ui == 2){getitem 5172, 1; dispbottom "Найдено: Beret";}
+				else if (@ui == 3){getitem 2285, 1; dispbottom "Найдено: Apple of Archer";}
+				else if (@ui == 4){getitem 5140, 1; dispbottom "Найдено: Charming Ribbon [1]";}
+				else if (@ui == 5){getitem 5348, 1; dispbottom "Найдено: Big Ribbon [1]";}
+				else if (@ui == 6){getitem 2229, 1; dispbottom "Найдено: Helm [1]";}
+				else if (@ui == 7){getitem 2221, 1; dispbottom "Найдено: Hat [1]";}
+				else if (@ui == 8){getitem 2225, 1; dispbottom "Найдено: Goggles [1]";}
+				else if (@ui == 9){getitem 2227, 1; dispbottom "Найдено: Cap [1]";}
+				else if (@ui == 10){getitem 2231, 1; dispbottom "Найдено: Gemmed Sallet [1]";}
+				else if (@ui == 11){getitem 5120, 1; dispbottom "Найдено: Bucket Hat [1]";}
+				else if (@ui == 12){getitem 5162, 1; dispbottom "Найдено: Bone Helm [1]";}
+				else if (@ui == 13){getitem 2217, 1; dispbottom "Найдено: Biretta [1]";}
+				else if (@ui == 14){getitem 5349, 1; dispbottom "Найдено: Boy's Cap [1]";}
+				else if (@ui == 15){getitem 5157, 1; dispbottom "Найдено: Orc Helm [1]";}
+				else if (@ui == 16){getitem 2258, 1; dispbottom "Найдено: Spiky Band";}
+				else if (@ui == 17){getitem 2502, 1; dispbottom "Найдено: Hood [1]";}
+				else if (@ui == 18){getitem 2517, 1; dispbottom "Найдено: Vali's Manteau";}
+				else if (@ui == 19){getitem 2528, 1; dispbottom "Найдено: Wool Scarf [1]";}
+				else if (@ui == 20){getitem 2531, 1; dispbottom "Найдено: Ulfhedinn [1]";}
+				else if (@ui == 21){getitem 2523, 1; dispbottom "Найдено: Undershirt [1]";}
+				else if (@ui == 22){getitem 2508, 1; dispbottom "Найдено: Ragamuffin Manteau";}
+				else if (@ui == 23){getitem 2518, 1; dispbottom "Найдено: Morpheus's Shawl";}
+				else if (@ui == 24){getitem 2506, 1; dispbottom "Найдено: Manteau [1]";}
+				else if (@ui == 25){getitem 2553, 1; dispbottom "Найдено: Dragon Manteau [1]";}
+				else if (@ui == 26){getitem 2102, 1; dispbottom "Найдено: Guard [1]";}
+				else if (@ui == 27){getitem 2108, 1; dispbottom "Найдено: Mirror Shield [1]";}
+				else if (@ui == 28){getitem 2123, 1; dispbottom "Найдено: Orleans's Server [1]";}
+				else if (@ui == 29){getitem 2106, 1; dispbottom "Найдено: Shield [1]";}
+				else if (@ui == 30){getitem 2114, 1; dispbottom "Найдено: Stone Buckler [1]";}
+				else if (@ui == 31){getitem 2125, 1; dispbottom "Найдено: Strong Shield [1]";}
+				else if (@ui == 32){getitem 2104, 1; dispbottom "Найдено: Buckler [1]";}
+				else if (@ui == 33){getitem 2109, 1; dispbottom "Найдено: Memory Book";}
+				else if (@ui == 34){getitem 2402, 1; dispbottom "Найдено: Sandals [1]";}
+				else if (@ui == 35){getitem 2424, 1; dispbottom "Найдено: Tidal Shoes [1]";}
+				else if (@ui == 36){getitem 2422, 1; dispbottom "Найдено: High Fashion Sandals [1]";}
+				else if (@ui == 37){getitem 2432, 1; dispbottom "Найдено: High Heels [1]";}
+				else if (@ui == 38){getitem 2404, 1; dispbottom "Найдено: Shoes [1]";}
+				else if (@ui == 39){getitem 2406, 1; dispbottom "Найдено: Boots [1]";}
+				else if (@ui == 40){getitem 2426, 1; dispbottom "Найдено: Shadow Walk";}
+				else if (@ui == 41){getitem 2407, 1; dispbottom "Найдено: Crystal Pumps";}
+				else if (@ui == 42){getitem 2425, 1; dispbottom "Найдено: Black Leather Boots";}
+				else if (@ui == 43){getitem 2608, 1; dispbottom "Найдено: Rosary";}
+				else if (@ui == 44){getitem 2605, 1; dispbottom "Найдено: Brooch";}
+				else if (@ui == 45){getitem 2602, 1; dispbottom "Найдено: Earring";}
+				else if (@ui == 46){getitem 2607, 1; dispbottom "Найдено: Clip [1]";}
+				else if (@ui == 47){getitem 2604, 1; dispbottom "Найдено: Glove";}
+				else if (@ui == 48){getitem 2715, 1; dispbottom "Найдено: Skull Ring [1]";}
+				else if (@ui == 49){getitem 2601, 1; dispbottom "Найдено: Ring";}
+				else if (@ui == 50){getitem 2745, 1; dispbottom "Найдено: Pinguicula Corsage [1]";}
+				else if (@ui == 51){getitem 2603, 1; dispbottom "Найдено: Necklace";}
+				else if (@ui == 52){getitem 2619, 1; dispbottom "Найдено: Bow Thimble";}
+				else if (@ui == 53){getitem 2617, 1; dispbottom "Найдено: Celebrant's Mitten";}
+				else if (@ui == 54){getitem 2656, 1; dispbottom "Найдено: Armor Charm";}
+				else if (@ui == 55){getitem 2626, 1; dispbottom "Найдено: Rosary [1]";}
+				else if (@ui == 56){getitem 2621, 1; dispbottom "Найдено: Ring [1]";}
+				else if (@ui == 57){getitem 2615, 1; dispbottom "Найдено: Safety Ring";}
+				else if (@ui == 58){getitem 2658, 1; dispbottom "Найдено: Nile Rose [1]";}
+				else if (@ui == 59){getitem 2624, 1; dispbottom "Найдено: Glove [1]";}
+				else if (@ui == 60){getitem 2623, 1; dispbottom "Найдено: Necklace [1]";}
+				else if (@ui == 61){getitem 2622, 1; dispbottom "Найдено: Earring [1]";}
+				else if (@ui == 62){getitem 2671, 1; dispbottom "Найдено: Bow Thimble [1]";}
+				else if (@ui == 63){getitem 2703, 1; dispbottom "Найдено: Expert Ring [1]";}
+				else if (@ui == 64){getitem 2625, 1; dispbottom "Найдено: Brooch [1]";}
+				else if (@ui == 65){getitem 2304, 1; dispbottom "Найдено: Jacket [1]";}
+				else if (@ui == 66){getitem 2329, 1; dispbottom "Найдено: Wooden Mail [1]";}
+				else if (@ui == 67){getitem 2331, 1; dispbottom "Найдено: Tights [1]";}
+				else if (@ui == 68){getitem 2333, 1; dispbottom "Найдено: Silver Robe [1]";}
+				else if (@ui == 69){getitem 2322, 1; dispbottom "Найдено: Silk Robe [1]";}
+				else if (@ui == 70){getitem 2324, 1; dispbottom "Найдено: Scapulare [1]";}
+				else if (@ui == 71){getitem 2334, 1; dispbottom "Найдено: Mage Coat";}
+				else if (@ui == 72){getitem 2371, 1; dispbottom "Найдено: Pantie [1]";}
+				else if (@ui == 73){getitem 2326, 1; dispbottom "Найдено: Saint's Robe [1]";}
+				else if (@ui == 74){getitem 2313, 1; dispbottom "Найдено: Padded Armor [1]";}
+				else if (@ui == 75){getitem 2365, 1; dispbottom "Найдено: Orleans's Gown [1]";}
+				else if (@ui == 76){getitem 2308, 1; dispbottom "Найдено: Mantle [1]";}
+				else if (@ui == 77){getitem 2311, 1; dispbottom "Найдено: Mink Coat [1]";}
+				else if (@ui == 78){getitem 2306, 1; dispbottom "Найдено: Adventurer's Suit [1]";}
+				else if (@ui == 79){getitem 2315, 1; dispbottom "Найдено: Chain Mail [1]";}
+				else if (@ui == 80){getitem 2310, 1; dispbottom "Найдено: Coat [1]";}
+				else if (@ui == 81){getitem 2302, 1; dispbottom "Найдено: Cotton Shirt [1]";}
+				else if (@ui == 82){getitem 2399, 1; dispbottom "Найдено: Dragon Vest [1]";}
+				else if (@ui == 83){getitem 1211, 1; dispbottom "Найдено: Dirk [3]";}
+				else if (@ui == 84){getitem 1253, 1; dispbottom "Найдено: Katar [2]";}
+				else if (@ui == 85){getitem 1734, 1; dispbottom "Найдено: Orc Archer Bow";}
+				else if (@ui == 86){getitem 1309, 1; dispbottom "Найдено: Orcish Axe [4]";}
+				else if (@ui == 87){getitem 1408, 1; dispbottom "Найдено: Pike [4]";}
+				else if (@ui == 88){getitem 1458, 1; dispbottom "Найдено: Partizan [2]";}
+				else if (@ui == 89){getitem 1951, 1; dispbottom "Найдено: Rope [4]";}
+				else if (@ui == 90){getitem 1953, 1; dispbottom "Найдено: Whip [3]";}
+				else if (@ui == 91){getitem 1802, 1; dispbottom "Найдено: Waghnak [4]";}
+				else if (@ui == 92){getitem 1902, 1; dispbottom "Найдено: Violin [4]";}
+				else if (@ui == 93){getitem 1158, 1; dispbottom "Найдено: Two-Handed Sword [2]";}
+				else if (@ui == 94){getitem 1361, 1; dispbottom "Найдено: Two-Handed Axe [2]";}
+				else if (@ui == 95){getitem 1461, 1; dispbottom "Найдено: Trident [3]";}
+				else if (@ui == 96){getitem 1532, 1; dispbottom "Найдено: Stunner [2]";}
+				else if (@ui == 97){getitem 1806, 1; dispbottom "Найдено: Studded Knuckles [3]";}
+				else if (@ui == 98){getitem 1608, 1; dispbottom "Найдено: Staff [3]";}
+				else if (@ui == 99){getitem 1264, 1; dispbottom "Найдено: Specialty Jur [4]";}
+				else if (@ui == 100){getitem 13027, 1; dispbottom "Найдено: Scalpel [3]";}
+				else if (@ui == 101){getitem 1127, 1; dispbottom "Найдено: Saber [3]";}
+				else if (@ui == 102){getitem 1117, 1; dispbottom "Найдено: Katana [4]";}
+				else if (@ui == 103){getitem 1906, 1; dispbottom "Найдено: Lute [3]";}
+				else if (@ui == 104){getitem 1208, 1; dispbottom "Найдено: Main Gauche [4]";}
+				else if (@ui == 105){getitem 1904, 1; dispbottom "Найдено: Mandolin [3]";}
+				else if (@ui == 106){getitem 1514, 1; dispbottom "Найдено: Morning Star [2]";}
+				else if (@ui == 107){getitem 1255, 1; dispbottom "Найдено: Jamadhar [1]";}
+				else if (@ui == 108){getitem 1251, 1; dispbottom "Найдено: Jur [3]";}
+				else if (@ui == 109){getitem 1622, 1; dispbottom "Найдено: Hypnotist's Staff [2]";}
+				else if (@ui == 110){getitem 1910, 1; dispbottom "Найдено: Harp [2]";}
+				else if (@ui == 111){getitem 1464, 1; dispbottom "Найдено: Halberd [2]";}
+				else if (@ui == 112){getitem 1128, 1; dispbottom "Найдено: Haedonggum [2]";}
+				else if (@ui == 113){getitem 1220, 1; dispbottom "Найдено: Gladius [3]";}
+				else if (@ui == 114){getitem 1455, 1; dispbottom "Найдено: Glaive [3]";}
+				else if (@ui == 115){getitem 1716, 1; dispbottom "Найдено: Gakkung Bow [2]";}
+				else if (@ui == 116){getitem 1226, 1; dispbottom "Найдено: Damascus [2]";}
+				else if (@ui == 117){getitem 1615, 1; dispbottom "Найдено: Evil Bone Wand";}
+				else if (@ui == 118){getitem 1511, 1; dispbottom "Найдено: Flail [3]";}
+				else if (@ui == 119){getitem 1705, 1; dispbottom "Найдено: Composite Bow [4]";}
+				else if (@ui == 120){getitem 1711, 1; dispbottom "Найдено: Crossbow [3]";}
+				else if (@ui == 121){getitem 1810, 1; dispbottom "Найдено: Claw [2]";}
+				else if (@ui == 122){getitem 1520, 1; dispbottom "Найдено: Chain [3]";}
+				else if (@ui == 123){getitem 1108, 1; dispbottom "Найдено: Blade [4]";}
+				else if (@ui == 124){getitem 1162, 1; dispbottom "Найдено: Broad Sword [2]";}
+				else if (@ui == 125){getitem 1358, 1; dispbottom "Найдено: Buster [2]";}
+				else if (@ui == 126){getitem 1352, 1; dispbottom "Найдено: Battle Axe [4]";}
+				else if (@ui == 127){getitem 1551, 1; dispbottom "Найдено: Bible [2]";}
+				else if (@ui == 128){getitem 1611, 1; dispbottom "Найдено: Arc Wand [2]";}
+				else if (@ui == 129){getitem 1620, 1; dispbottom "Найдено: Survivor's Rod [1]";}
+				else if (@ui == 130){getitem 1618, 1; dispbottom "Найдено: Survivor's Rod [1]";}
+				else if (@ui == 131){getitem 1613, 1; dispbottom "Найдено: Mighty Staff";}
+				else if (@ui == 132){getitem 1550, 1; dispbottom "Найдено: Book [3]";}
+				else if (@ui == 133){getitem 1552, 1; dispbottom "Найдено: Tablet [1]";}
+				else if (@ui == 134){set @uii,rand (1,6);
+								if (@uii == 1){getitem 5027, 1; dispbottom "Найдено: Mage Hat";}
+								else if (@uii == 2){getitem 5239, 1; dispbottom "Найдено: Gray Mage Hat";}
+								else if (@uii == 3){getitem 5238, 1; dispbottom "Найдено: Red Mage Hat";}
+								else if (@uii == 4){getitem 5242, 1; dispbottom "Найдено: Yellow Mage Hat";}
+								else if (@uii == 5){getitem 5241, 1; dispbottom "Найдено: Blue Mage Hat";}
+								else if (@uii == 6){getitem 5240, 1; dispbottom "Найдено: Brown Mage Hat";}}
+				else if (@ui == 135){set @uii,rand (1,8);	
+								if (@uii == 1){getitem 5193, 1; dispbottom "Найдено: Green Ribbon [1]";}
+								else if (@uii == 2){getitem 5191, 1; dispbottom "Найдено: Black Ribbon [1]";}
+								else if (@uii == 3){getitem 5192, 1; dispbottom "Найдено: Yellow Ribbon [1]";}
+								else if (@uii == 4){getitem 5197, 1; dispbottom "Найдено: White Ribbon [1]";}
+								else if (@uii == 5){getitem 5195, 1; dispbottom "Найдено: Red Ribbon [1]";}
+								else if (@uii == 6){getitem 5194, 1; dispbottom "Найдено: Pink Ribbon [1]";}
+								else if (@uii == 7){getitem 5196, 1; dispbottom "Найдено: Orange Ribbon [1]";}
+								else if (@uii == 8){getitem 2209, 1; dispbottom "Найдено: Ribbon [1]";}}}
+	return;
+}
+//невероятно сложный сундук
+function	script	BOX_VERY_HARD	{
+	set @e,rand (500,120000);	set Zeny, Zeny + @e;	dispbottom "Найдено: "+ @e +" Zeny";
+	set @g1,rand (1,2);	
+	if (@g1 == 2){getitem 22423, 1;	dispbottom "Найдено: 1 Box Mod's";}
+	set @g2,rand (1,2);	
+	if (@g2 == 2){getitem 22424, 1;	dispbottom "Найдено: 1 Box Stat's";}
+	set @w1,rand (1,2);
+		if (@w1 < 2){set @w,rand (1,5);	getitem 984, @w;	dispbottom "Найдено: "+ @w +" Oridecon's";}
+	set @q1,rand (1,2);
+		if (@q1 < 2){set @q,rand (1,4);	getitem 985, @q;	dispbottom "Найдено: "+ @q +" Elunium's";}
+	set @z1,rand (1,2);
+		if (@z1 < 2){set @z,rand (1,7);	getitem 610, @z;	dispbottom "Найдено: "+ @z +" Yggdrasil Leaf's";}
+	set @x1,rand (1,2);
+		if (@x1 < 2){set @x,rand (1,10);	getitem 11504, @x;	dispbottom "Найдено: "+ @x +" Extra Blue Potion's";}
+	set @v1,rand (1,2);
+		if (@v1 < 2){set @v,rand (1,13);	getitem 11503, @v;	dispbottom "Найдено: "+ @v +" Extra White Potion's";}
+	set @k1,rand (1,9);
+		if (@k1 < 4){  set @j1,rand (1,11);  
+						if (@j1 == 1){getitem 12074, 1; dispbottom "Найдено: 1 Tendon Satay";}
+						else if (@j1 == 2){getitem 12089, 1; dispbottom "Найдено: 1 Special Meat Stew";}
+						else if (@j1 == 3){getitem 12084, 1; dispbottom "Найдено: 1 Ascending Dragon Soup";}
+						else if (@j1 == 4){getitem 12079, 1; dispbottom "Найдено: 1 Tristan XII";}
+						else if (@j1 == 5){getitem 12094, 1; dispbottom "Найдено: 1 Heavenly Fruit Juice";}
+						else if (@j1 == 6){getitem 12099, 1; dispbottom "Найдено: 1 Blood Flavored Soda";}	  
+						else if (@j1 == 7){  set @jk1,rand (1,6);
+										if (@jk1 == 1){getitem 12075, 1; dispbottom "Найдено: 1 Steamed Tongue";}
+										else if (@jk1 == 2){getitem 12090, 1; dispbottom "Найдено: 1 Steamed Desert Scorpions";}
+										else if (@jk1 == 3){getitem 12085, 1; dispbottom "Найдено: 1 Immortal Stew";}
+										else if (@jk1 == 4){getitem 12080, 1; dispbottom "Найдено: 1 Dragon Breath Cocktail";}
+										else if (@jk1 == 5){getitem 12095, 1; dispbottom "Найдено: 1 Hwergelmir's Tonic";}
+										else if (@jk1 == 6){getitem 12100, 1; dispbottom "Найдено: 1 Cooked Nine Tail's";}}	 
+						else if (@j1 > 7){}}
+		else if (@k1 > 4){ set @ui,rand (1,135);
+				if (@ui == 1){getitem 2233, 1; dispbottom "Найдено: Circlet [1]";}
+				else if (@ui == 2){getitem 5172, 1; dispbottom "Найдено: Beret";}
+				else if (@ui == 3){getitem 2285, 1; dispbottom "Найдено: Apple of Archer";}
+				else if (@ui == 4){getitem 5140, 1; dispbottom "Найдено: Charming Ribbon [1]";}
+				else if (@ui == 5){getitem 5348, 1; dispbottom "Найдено: Big Ribbon [1]";}
+				else if (@ui == 6){getitem 2229, 1; dispbottom "Найдено: Helm [1]";}
+				else if (@ui == 7){getitem 2221, 1; dispbottom "Найдено: Hat [1]";}
+				else if (@ui == 8){getitem 2225, 1; dispbottom "Найдено: Goggles [1]";}
+				else if (@ui == 9){getitem 2227, 1; dispbottom "Найдено: Cap [1]";}
+				else if (@ui == 10){getitem 2231, 1; dispbottom "Найдено: Gemmed Sallet [1]";}
+				else if (@ui == 11){getitem 5120, 1; dispbottom "Найдено: Bucket Hat [1]";}
+				else if (@ui == 12){getitem 5162, 1; dispbottom "Найдено: Bone Helm [1]";}
+				else if (@ui == 13){getitem 2217, 1; dispbottom "Найдено: Biretta [1]";}
+				else if (@ui == 14){getitem 5349, 1; dispbottom "Найдено: Boy's Cap [1]";}
+				else if (@ui == 15){getitem 5157, 1; dispbottom "Найдено: Orc Helm [1]";}
+				else if (@ui == 16){getitem 2258, 1; dispbottom "Найдено: Spiky Band";}
+				else if (@ui == 17){getitem 2502, 1; dispbottom "Найдено: Hood [1]";}
+				else if (@ui == 18){getitem 2517, 1; dispbottom "Найдено: Vali's Manteau";}
+				else if (@ui == 19){getitem 2528, 1; dispbottom "Найдено: Wool Scarf [1]";}
+				else if (@ui == 20){getitem 2531, 1; dispbottom "Найдено: Ulfhedinn [1]";}
+				else if (@ui == 21){getitem 2523, 1; dispbottom "Найдено: Undershirt [1]";}
+				else if (@ui == 22){getitem 2508, 1; dispbottom "Найдено: Ragamuffin Manteau";}
+				else if (@ui == 23){getitem 2518, 1; dispbottom "Найдено: Morpheus's Shawl";}
+				else if (@ui == 24){getitem 2506, 1; dispbottom "Найдено: Manteau [1]";}
+				else if (@ui == 25){getitem 2553, 1; dispbottom "Найдено: Dragon Manteau [1]";}
+				else if (@ui == 26){getitem 2102, 1; dispbottom "Найдено: Guard [1]";}
+				else if (@ui == 27){getitem 2108, 1; dispbottom "Найдено: Mirror Shield [1]";}
+				else if (@ui == 28){getitem 2123, 1; dispbottom "Найдено: Orleans's Server [1]";}
+				else if (@ui == 29){getitem 2106, 1; dispbottom "Найдено: Shield [1]";}
+				else if (@ui == 30){getitem 2114, 1; dispbottom "Найдено: Stone Buckler [1]";}
+				else if (@ui == 31){getitem 2125, 1; dispbottom "Найдено: Strong Shield [1]";}
+				else if (@ui == 32){getitem 2104, 1; dispbottom "Найдено: Buckler [1]";}
+				else if (@ui == 33){getitem 2109, 1; dispbottom "Найдено: Memory Book";}
+				else if (@ui == 34){getitem 2402, 1; dispbottom "Найдено: Sandals [1]";}
+				else if (@ui == 35){getitem 2424, 1; dispbottom "Найдено: Tidal Shoes [1]";}
+				else if (@ui == 36){getitem 2422, 1; dispbottom "Найдено: High Fashion Sandals [1]";}
+				else if (@ui == 37){getitem 2432, 1; dispbottom "Найдено: High Heels [1]";}
+				else if (@ui == 38){getitem 2404, 1; dispbottom "Найдено: Shoes [1]";}
+				else if (@ui == 39){getitem 2406, 1; dispbottom "Найдено: Boots [1]";}
+				else if (@ui == 40){getitem 2426, 1; dispbottom "Найдено: Shadow Walk";}
+				else if (@ui == 41){getitem 2407, 1; dispbottom "Найдено: Crystal Pumps";}
+				else if (@ui == 42){getitem 2425, 1; dispbottom "Найдено: Black Leather Boots";}
+				else if (@ui == 43){getitem 2608, 1; dispbottom "Найдено: Rosary";}
+				else if (@ui == 44){getitem 2605, 1; dispbottom "Найдено: Brooch";}
+				else if (@ui == 45){getitem 2602, 1; dispbottom "Найдено: Earring";}
+				else if (@ui == 46){getitem 2607, 1; dispbottom "Найдено: Clip [1]";}
+				else if (@ui == 47){getitem 2604, 1; dispbottom "Найдено: Glove";}
+				else if (@ui == 48){getitem 2715, 1; dispbottom "Найдено: Skull Ring [1]";}
+				else if (@ui == 49){getitem 2601, 1; dispbottom "Найдено: Ring";}
+				else if (@ui == 50){getitem 2745, 1; dispbottom "Найдено: Pinguicula Corsage [1]";}
+				else if (@ui == 51){getitem 2603, 1; dispbottom "Найдено: Necklace";}
+				else if (@ui == 52){getitem 2619, 1; dispbottom "Найдено: Bow Thimble";}
+				else if (@ui == 53){getitem 2617, 1; dispbottom "Найдено: Celebrant's Mitten";}
+				else if (@ui == 54){getitem 2656, 1; dispbottom "Найдено: Armor Charm";}
+				else if (@ui == 55){getitem 2626, 1; dispbottom "Найдено: Rosary [1]";}
+				else if (@ui == 56){getitem 2621, 1; dispbottom "Найдено: Ring [1]";}
+				else if (@ui == 57){getitem 2615, 1; dispbottom "Найдено: Safety Ring";}
+				else if (@ui == 58){getitem 2658, 1; dispbottom "Найдено: Nile Rose [1]";}
+				else if (@ui == 59){getitem 2624, 1; dispbottom "Найдено: Glove [1]";}
+				else if (@ui == 60){getitem 2623, 1; dispbottom "Найдено: Necklace [1]";}
+				else if (@ui == 61){getitem 2622, 1; dispbottom "Найдено: Earring [1]";}
+				else if (@ui == 62){getitem 2671, 1; dispbottom "Найдено: Bow Thimble [1]";}
+				else if (@ui == 63){getitem 2703, 1; dispbottom "Найдено: Expert Ring [1]";}
+				else if (@ui == 64){getitem 2625, 1; dispbottom "Найдено: Brooch [1]";}
+				else if (@ui == 65){getitem 2304, 1; dispbottom "Найдено: Jacket [1]";}
+				else if (@ui == 66){getitem 2329, 1; dispbottom "Найдено: Wooden Mail [1]";}
+				else if (@ui == 67){getitem 2331, 1; dispbottom "Найдено: Tights [1]";}
+				else if (@ui == 68){getitem 2333, 1; dispbottom "Найдено: Silver Robe [1]";}
+				else if (@ui == 69){getitem 2322, 1; dispbottom "Найдено: Silk Robe [1]";}
+				else if (@ui == 70){getitem 2324, 1; dispbottom "Найдено: Scapulare [1]";}
+				else if (@ui == 71){getitem 2334, 1; dispbottom "Найдено: Mage Coat";}
+				else if (@ui == 72){getitem 2371, 1; dispbottom "Найдено: Pantie [1]";}
+				else if (@ui == 73){getitem 2326, 1; dispbottom "Найдено: Saint's Robe [1]";}
+				else if (@ui == 74){getitem 2313, 1; dispbottom "Найдено: Padded Armor [1]";}
+				else if (@ui == 75){getitem 2365, 1; dispbottom "Найдено: Orleans's Gown [1]";}
+				else if (@ui == 76){getitem 2308, 1; dispbottom "Найдено: Mantle [1]";}
+				else if (@ui == 77){getitem 2311, 1; dispbottom "Найдено: Mink Coat [1]";}
+				else if (@ui == 78){getitem 2306, 1; dispbottom "Найдено: Adventurer's Suit [1]";}
+				else if (@ui == 79){getitem 2315, 1; dispbottom "Найдено: Chain Mail [1]";}
+				else if (@ui == 80){getitem 2310, 1; dispbottom "Найдено: Coat [1]";}
+				else if (@ui == 81){getitem 2302, 1; dispbottom "Найдено: Cotton Shirt [1]";}
+				else if (@ui == 82){getitem 2399, 1; dispbottom "Найдено: Dragon Vest [1]";}
+				else if (@ui == 83){getitem 1211, 1; dispbottom "Найдено: Dirk [3]";}
+				else if (@ui == 84){getitem 1253, 1; dispbottom "Найдено: Katar [2]";}
+				else if (@ui == 85){getitem 1734, 1; dispbottom "Найдено: Orc Archer Bow";}
+				else if (@ui == 86){getitem 1309, 1; dispbottom "Найдено: Orcish Axe [4]";}
+				else if (@ui == 87){getitem 1408, 1; dispbottom "Найдено: Pike [4]";}
+				else if (@ui == 88){getitem 1458, 1; dispbottom "Найдено: Partizan [2]";}
+				else if (@ui == 89){getitem 1951, 1; dispbottom "Найдено: Rope [4]";}
+				else if (@ui == 90){getitem 1953, 1; dispbottom "Найдено: Whip [3]";}
+				else if (@ui == 91){getitem 1802, 1; dispbottom "Найдено: Waghnak [4]";}
+				else if (@ui == 92){getitem 1902, 1; dispbottom "Найдено: Violin [4]";}
+				else if (@ui == 93){getitem 1158, 1; dispbottom "Найдено: Two-Handed Sword [2]";}
+				else if (@ui == 94){getitem 1361, 1; dispbottom "Найдено: Two-Handed Axe [2]";}
+				else if (@ui == 95){getitem 1461, 1; dispbottom "Найдено: Trident [3]";}
+				else if (@ui == 96){getitem 1532, 1; dispbottom "Найдено: Stunner [2]";}
+				else if (@ui == 97){getitem 1806, 1; dispbottom "Найдено: Studded Knuckles [3]";}
+				else if (@ui == 98){getitem 1608, 1; dispbottom "Найдено: Staff [3]";}
+				else if (@ui == 99){getitem 1264, 1; dispbottom "Найдено: Specialty Jur [4]";}
+				else if (@ui == 100){getitem 13027, 1; dispbottom "Найдено: Scalpel [3]";}
+				else if (@ui == 101){getitem 1127, 1; dispbottom "Найдено: Saber [3]";}
+				else if (@ui == 102){getitem 1117, 1; dispbottom "Найдено: Katana [4]";}
+				else if (@ui == 103){getitem 1906, 1; dispbottom "Найдено: Lute [3]";}
+				else if (@ui == 104){getitem 1208, 1; dispbottom "Найдено: Main Gauche [4]";}
+				else if (@ui == 105){getitem 1904, 1; dispbottom "Найдено: Mandolin [3]";}
+				else if (@ui == 106){getitem 1514, 1; dispbottom "Найдено: Morning Star [2]";}
+				else if (@ui == 107){getitem 1255, 1; dispbottom "Найдено: Jamadhar [1]";}
+				else if (@ui == 108){getitem 1251, 1; dispbottom "Найдено: Jur [3]";}
+				else if (@ui == 109){getitem 1622, 1; dispbottom "Найдено: Hypnotist's Staff [2]";}
+				else if (@ui == 110){getitem 1910, 1; dispbottom "Найдено: Harp [2]";}
+				else if (@ui == 111){getitem 1464, 1; dispbottom "Найдено: Halberd [2]";}
+				else if (@ui == 112){getitem 1128, 1; dispbottom "Найдено: Haedonggum [2]";}
+				else if (@ui == 113){getitem 1220, 1; dispbottom "Найдено: Gladius [3]";}
+				else if (@ui == 114){getitem 1455, 1; dispbottom "Найдено: Glaive [3]";}
+				else if (@ui == 115){getitem 1716, 1; dispbottom "Найдено: Gakkung Bow [2]";}
+				else if (@ui == 116){getitem 1226, 1; dispbottom "Найдено: Damascus [2]";}
+				else if (@ui == 117){getitem 1615, 1; dispbottom "Найдено: Evil Bone Wand";}
+				else if (@ui == 118){getitem 1511, 1; dispbottom "Найдено: Flail [3]";}
+				else if (@ui == 119){getitem 1705, 1; dispbottom "Найдено: Composite Bow [4]";}
+				else if (@ui == 120){getitem 1711, 1; dispbottom "Найдено: Crossbow [3]";}
+				else if (@ui == 121){getitem 1810, 1; dispbottom "Найдено: Claw [2]";}
+				else if (@ui == 122){getitem 1520, 1; dispbottom "Найдено: Chain [3]";}
+				else if (@ui == 123){getitem 1108, 1; dispbottom "Найдено: Blade [4]";}
+				else if (@ui == 124){getitem 1162, 1; dispbottom "Найдено: Broad Sword [2]";}
+				else if (@ui == 125){getitem 1358, 1; dispbottom "Найдено: Buster [2]";}
+				else if (@ui == 126){getitem 1352, 1; dispbottom "Найдено: Battle Axe [4]";}
+				else if (@ui == 127){getitem 1551, 1; dispbottom "Найдено: Bible [2]";}
+				else if (@ui == 128){getitem 1611, 1; dispbottom "Найдено: Arc Wand [2]";}
+				else if (@ui == 129){getitem 1620, 1; dispbottom "Найдено: Survivor's Rod [1]";}
+				else if (@ui == 130){getitem 1618, 1; dispbottom "Найдено: Survivor's Rod [1]";}
+				else if (@ui == 131){getitem 1613, 1; dispbottom "Найдено: Mighty Staff";}
+				else if (@ui == 132){getitem 1550, 1; dispbottom "Найдено: Book [3]";}
+				else if (@ui == 133){getitem 1552, 1; dispbottom "Найдено: Tablet [1]";}
+				else if (@ui == 134){set @uii,rand (1,6);
+								if (@uii == 1){getitem 5027, 1; dispbottom "Найдено: Mage Hat";}
+								else if (@uii == 2){getitem 5239, 1; dispbottom "Найдено: Gray Mage Hat";}
+								else if (@uii == 3){getitem 5238, 1; dispbottom "Найдено: Red Mage Hat";}
+								else if (@uii == 4){getitem 5242, 1; dispbottom "Найдено: Yellow Mage Hat";}
+								else if (@uii == 5){getitem 5241, 1; dispbottom "Найдено: Blue Mage Hat";}
+								else if (@uii == 6){getitem 5240, 1; dispbottom "Найдено: Brown Mage Hat";}}
+				else if (@ui == 135){set @uii,rand (1,8);	
+								if (@uii == 1){getitem 5193, 1; dispbottom "Найдено: Green Ribbon [1]";}
+								else if (@uii == 2){getitem 5191, 1; dispbottom "Найдено: Black Ribbon [1]";}
+								else if (@uii == 3){getitem 5192, 1; dispbottom "Найдено: Yellow Ribbon [1]";}
+								else if (@uii == 4){getitem 5197, 1; dispbottom "Найдено: White Ribbon [1]";}
+								else if (@uii == 5){getitem 5195, 1; dispbottom "Найдено: Red Ribbon [1]";}
+								else if (@uii == 6){getitem 5194, 1; dispbottom "Найдено: Pink Ribbon [1]";}
+								else if (@uii == 7){getitem 5196, 1; dispbottom "Найдено: Orange Ribbon [1]";}
+								else if (@uii == 8){getitem 2209, 1; dispbottom "Найдено: Ribbon [1]";}}}
+		else if (@k1 == 4){ set @ui,rand (1,135);
+				if (@ui == 1){set @uii,rand (1,6);
+								if (@uii == 1){getitem 5233, 1; dispbottom "Найдено: Blue Drooping Cat";}
+								else if (@uii == 2){getitem 5231, 1; dispbottom "Найдено: Brown Drooping Cat";}
+								else if (@uii == 3){getitem 5058, 1; dispbottom "Найдено: Drooping Cat";}
+								else if (@uii == 4){getitem 5230, 1; dispbottom "Найдено: Gray Drooping Cat";}
+								else if (@uii == 5){getitem 5232, 1; dispbottom "Найдено: Pink Drooping Cat";}
+								else if (@uii == 6){getitem 5234, 1; dispbottom "Найдено: Yellow Drooping Cat";}}
+				else if (@ui == 2){set @uii,rand (1,4);
+								if (@uii == 1){getitem 5038, 1; dispbottom "Найдено: Deviruchi Hat";}
+								else if (@uii == 2){getitem 5228, 1; dispbottom "Найдено: Gray Deviruchi Hat";}
+								else if (@uii == 3){getitem 5227, 1; dispbottom "Найдено: Red Deviruchi Hat";}
+								else if (@uii == 4){getitem 5229, 1; dispbottom "Найдено: Brown Deviruchi Hat";}}
+				else if (@ui == 3){getitem 5382, 1; dispbottom "Найдено: Bell Ribbon [1]";}
+				else if (@ui == 4){getitem 5348, 1; dispbottom "Найдено: Big Ribbon [1]";}
+				else if (@ui == 5){getitem 2217, 1; dispbottom "Найдено: Biretta [1]";}
+				else if (@ui == 6){getitem 5120, 1; dispbottom "Найдено: Bucket Hat [1]";}
+				else if (@ui == 7){getitem 5163, 1; dispbottom "Найдено: Corsair [1]";}
+				else if (@ui == 8){getitem 2235, 1; dispbottom "Найдено: Crown";}
+				else if (@ui == 9){getitem 5165, 1; dispbottom "Найдено: Crown [1]";}
+				else if (@ui == 10){getitem 5081, 1; dispbottom "Найдено: Crown of Mistress";}
+				else if (@ui == 11){getitem 5124, 1; dispbottom "Найдено: Fricca's Circlet";}
+				else if (@ui == 12){getitem 2231, 1; dispbottom "Найдено: Gemmed Sallet [1]";}
+				else if (@ui == 13){getitem 2229, 1; dispbottom "Найдено: Helm [1]";}
+				else if (@ui == 14){getitem 5070, 1; dispbottom "Найдено: Hot-blooded Headband";}
+				else if (@ui == 15){getitem 5072, 1; dispbottom "Найдено: Incubus Horn";}
+				else if (@ui == 16){getitem 5002, 1; dispbottom "Найдено: Jewel Crown";}
+				else if (@ui == 17){getitem 5003, 1; dispbottom "Найдено: Joker Jester";}
+				else if (@ui == 18){getitem 5138, 1; dispbottom "Найдено: Magic Eyes";}
+				else if (@ui == 19){getitem 2256, 1; dispbottom "Найдено: Majestic Goat";}
+				else if (@ui == 20){getitem 5160, 1; dispbottom "Найдено: Majestic Goat [1]";}
+				else if (@ui == 21){getitem 5126, 1; dispbottom "Найдено: Morpheus's Hood";}
+				else if (@ui == 22){getitem 5157, 1; dispbottom "Найдено: Orc Helm [1]";}
+				else if (@ui == 23){getitem 5350, 1; dispbottom "Найдено: Pirate Bandana [1]";}
+				else if (@ui == 24){getitem 2258, 1; dispbottom "Найдено: Spiky Band";}
+				else if (@ui == 25){getitem 5161, 1; dispbottom "Найдено: Spiky Band [1]";}
+				else if (@ui == 26){getitem 5066, 1; dispbottom "Найдено: Succubus Horn";}
+				else if (@ui == 27){getitem 5119, 1; dispbottom "Найдено: Super Novice Hat [1]";}
+				else if (@ui == 28){getitem 5351, 1; dispbottom "Найдено: Sunflower [1]";}
+				else if (@ui == 29){getitem 2234, 1; dispbottom "Найдено: Tiara";}
+				else if (@ui == 30){getitem 5164, 1; dispbottom "Найдено: Tiara [1]";}
+				else if (@ui == 31){getitem 2223, 1; dispbottom "Найдено: Turban [1]";}
+				else if (@ui == 32){getitem 5123, 1; dispbottom "Найдено: Ulle's Cap [1]";}
+				else if (@ui == 33){getitem 5171, 1; dispbottom "Найдено: Valkyrie Helm [1]";}
+				else if (@ui == 34){getitem 5277, 1; dispbottom "Найдено: Yellow Bandana";}
+				else if (@ui == 35){getitem 2507, 1; dispbottom "Найдено: Ancient Cape";}
+				else if (@ui == 36){getitem 2537, 1; dispbottom "Найдено: Diabolus Manteau [1]";}
+				else if (@ui == 37){getitem 2527, 1; dispbottom "Найдено: Dragon Breath [1]";}
+				else if (@ui == 38){getitem 2553, 1; dispbottom "Найдено: Dragon Manteau [1]";}
+				else if (@ui == 39){getitem 2515, 1; dispbottom "Найдено: Eagle Wing [1]";}
+				else if (@ui == 40){getitem 2516, 1; dispbottom "Найдено: Falcon Muffler";}
+				else if (@ui == 41){getitem 2520, 1; dispbottom "Найдено: Goibne's Spaulders";}
+				else if (@ui == 42){getitem 2513, 1; dispbottom "Найдено: Heavenly Maiden Robe [1]";}
+				else if (@ui == 43){getitem 2544, 1; dispbottom "Найдено: Leather of Tendrilion [1]";}
+				else if (@ui == 44){getitem 2506, 1; dispbottom "Найдено: Manteau [1]";}
+				else if (@ui == 45){getitem 2532, 1; dispbottom "Найдено: Mithril Magic Cape [1]";}
+				else if (@ui == 46){getitem 2518, 1; dispbottom "Найдено: Morpheus's Shawl";}
+				else if (@ui == 47){getitem 2519, 1; dispbottom "Найдено: Morrigane's Manteau";}
+				else if (@ui == 48){getitem 2504, 1; dispbottom "Найдено: Muffler [1]";}
+				else if (@ui == 49){getitem 2545, 1; dispbottom "Найдено: Musika [1]";}
+				else if (@ui == 50){getitem 2514, 1; dispbottom "Найдено: Pauldron [1]";}
+				else if (@ui == 51){getitem 2530, 1; dispbottom "Найдено: Rider Insignia [1]";}
+				else if (@ui == 52){getitem 2536, 1; dispbottom "Найдено: Skin of Ventus [1]";}
+				else if (@ui == 53){getitem 2524, 1; dispbottom "Найдено: Valkyrian Manteau [1]";}
+				else if (@ui == 54){getitem 2528, 1; dispbottom "Найдено: Wool Scarf [1]";}
+				else if (@ui == 55){getitem 2389, 1; dispbottom "Найдено: Armor of Naga [1]";}
+				else if (@ui == 56){getitem 2315, 1; dispbottom "Найдено: Chain Mail [1]";}
+				else if (@ui == 57){getitem 2386, 1; dispbottom "Найдено: Chameleon Armor";}
+				else if (@ui == 58){getitem 2375, 1; dispbottom "Найдено: Diabolus Armor [1]";}
+				else if (@ui == 59){getitem 2374, 1; dispbottom "Найдено: Diabolus Robe [1]";}
+				else if (@ui == 60){getitem 2366, 1; dispbottom "Найдено: Divine Cloth [1]";}
+				else if (@ui == 61){getitem 2399, 1; dispbottom "Найдено: Dragon Vest [1]";}
+				else if (@ui == 62){getitem 2320, 1; dispbottom "Найдено: Formal Suit [1]";}
+				else if (@ui == 63){getitem 2317, 1; dispbottom "Найдено: Full Plate [1]";}
+				else if (@ui == 64){getitem 2319, 1; dispbottom "Найдено: Glittering Jacket [1]";}
+				else if (@ui == 65){getitem 2354, 1; dispbottom "Найдено: Goibne's Armor";}
+				else if (@ui == 66){getitem 2327, 1; dispbottom "Найдено: Holy Robe";}
+				else if (@ui == 67){getitem 2390, 1; dispbottom "Найдено: Improved Tights [1]";}
+				else if (@ui == 68){getitem 2388, 1; dispbottom "Найдено: Kandura [1]";}
+				else if (@ui == 69){getitem 2342, 1; dispbottom "Найдено: Legion Plate Armor [1]";}
+				else if (@ui == 70){getitem 2391, 1; dispbottom "Найдено: Life Link [1]";}
+				else if (@ui == 71){getitem 2318, 1; dispbottom "Найдено: Lord's Clothes [1]";}
+				else if (@ui == 72){getitem 2372, 1; dispbottom "Найдено: Mage Coat [1]";}
+				else if (@ui == 73){getitem 2364, 1; dispbottom "Найдено: Meteo Plate Armor [1]";}
+				else if (@ui == 74){getitem 2311, 1; dispbottom "Найдено: Mink Coat [1]";}
+				else if (@ui == 75){getitem 2365, 1; dispbottom "Найдено: Orleans's Gown [1]";}
+				else if (@ui == 76){getitem 2360, 1; dispbottom "Найдено: Robe of Cast [1]";}
+				else if (@ui == 77){getitem 2326, 1; dispbottom "Найдено: Saint's Robe [1]";}
+				else if (@ui == 78){getitem 2322, 1; dispbottom "Найдено: Silk Robe [1]";}
+				else if (@ui == 79){getitem 2387, 1; dispbottom "Найдено: Sprint Mail [1]";}
+				else if (@ui == 80){getitem 2336, 1; dispbottom "Найдено: Thief Clothes [1]";}
+				else if (@ui == 81){getitem 2331, 1; dispbottom "Найдено: Tights [1]";}
+				else if (@ui == 82){getitem 2357, 1; dispbottom "Найдено: Valkyrian Armor [1]";}
+				else if (@ui == 83){getitem 2138, 1; dispbottom "Найдено: Bradium Shield [1]";}
+				else if (@ui == 84){getitem 2104, 1; dispbottom "Найдено: Buckler [1]";}
+				else if (@ui == 85){getitem 2130, 1; dispbottom "Найдено: Cross Shield [1]";}
+				else if (@ui == 86){getitem 2129, 1; dispbottom "Найдено: Exorcism Bible";}
+				else if (@ui == 87){getitem 2131, 1; dispbottom "Найдено: Magic Bible Vol1 [1]";}
+				else if (@ui == 88){getitem 2121, 1; dispbottom "Найдено: Memory Book [1]";}
+				else if (@ui == 89){getitem 2109, 1; dispbottom "Найдено: Memory Book";}
+				else if (@ui == 90){getitem 2108, 1; dispbottom "Найдено: Mirror Shield [1]";}
+				else if (@ui == 91){getitem 2123, 1; dispbottom "Найдено: Orleans's Server [1]";}
+				else if (@ui == 92){getitem 2111, 1; dispbottom "Найдено: Sacred Mission";}
+				else if (@ui == 93){getitem 2106, 1; dispbottom "Найдено: Shield [1]";}
+				else if (@ui == 94){getitem 2134, 1; dispbottom "Найдено: Shield of Naga [1]";}
+				else if (@ui == 95){getitem 2114, 1; dispbottom "Найдено: Stone Buckler [1]";}
+				else if (@ui == 96){getitem 2125, 1; dispbottom "Найдено: Strong Shield [1]";}
+				else if (@ui == 97){getitem 2133, 1; dispbottom "Найдено: Tournament Shield [1]";}
+				else if (@ui == 98){getitem 2115, 1; dispbottom "Найдено: Valkyrja's Shield [1]";}
+				else if (@ui == 99){getitem 2124, 1; dispbottom "Найдено: Thorny Buckler [1]";}
+				else if (@ui == 100){getitem 2122, 1; dispbottom "Найдено: Platinum Shield";}
+				else if (@ui == 101){getitem 2434, 1; dispbottom "Найдено: Black Leather Boots [1]";}
+				else if (@ui == 102){getitem 2406, 1; dispbottom "Найдено: Boots [1]";}
+				else if (@ui == 103){getitem 2433, 1; dispbottom "Найдено: Diabolus Boots [1]";}
+				else if (@ui == 104){getitem 2407, 1; dispbottom "Найдено: Crystal Pumps";}
+				else if (@ui == 105){getitem 2419, 1; dispbottom "Найдено: Goibne's Greaves";}
+				else if (@ui == 106){getitem 2412, 1; dispbottom "Найдено: Greaves [1]";}
+				else if (@ui == 107){getitem 2422, 1; dispbottom "Найдено: High Fashion Sandals [1]";}
+				else if (@ui == 108){getitem 2432, 1; dispbottom "Найдено: High Heels [1]";}
+				else if (@ui == 109){getitem 2426, 1; dispbottom "Найдено: Shadow Walk";}
+				else if (@ui == 110){getitem 2404, 1; dispbottom "Найдено: Shoes [1]";}
+				else if (@ui == 111){getitem 2440, 1; dispbottom "Найдено: Sprint Shoes [1]";}
+				else if (@ui == 112){getitem 2424, 1; dispbottom "Найдено: Tidal Shoes [1]";}
+				else if (@ui == 113){getitem 2421, 1; dispbottom "Найдено: Valkyrian Shoes [1]";}
+				else if (@ui == 114){getitem 2423, 1; dispbottom "Найдено: Variant Shoes";}
+				else if (@ui == 115){getitem 2418, 1; dispbottom "Найдено: Vidar's Boots";}
+				else if (@ui == 116){getitem 2450, 1; dispbottom "Найдено: Vital Tree Shoes";}
+				else if (@ui == 117){getitem 2702, 1; dispbottom "Найдено: Bison Horn [1]";}
+				else if (@ui == 118){getitem 2619, 1; dispbottom "Найдено: Bow Thimble";}
+				else if (@ui == 119){getitem 2671, 1; dispbottom "Найдено: Bow Thimble [1]";}
+				else if (@ui == 120){getitem 2790, 1; dispbottom "Найдено: Bradium Brooch [1]";}
+				else if (@ui == 121){getitem 2788, 1; dispbottom "Найдено: Bradium Earring [1]";}
+				else if (@ui == 122){getitem 2789, 1; dispbottom "Найдено: Bradium Ring [1]";}
+				else if (@ui == 123){getitem 2625, 1; dispbottom "Найдено: Brooch [1]";}
+				else if (@ui == 124){getitem 2605, 1; dispbottom "Найдено: Brooch";}
+				else if (@ui == 125){getitem 2607, 1; dispbottom "Найдено: Clip [1]";}
+				else if (@ui == 126){getitem 2728, 1; dispbottom "Найдено: Cursed Hand [1]";}
+				else if (@ui == 127){getitem 2616, 1; dispbottom "Найдено: Critical Ring";}
+				else if (@ui == 128){getitem 2746, 1; dispbottom "Найдено: Cold Heart";}
+				else if (@ui == 129){getitem 2732, 1; dispbottom "Найдено: Death Loop [1]";}
+				else if (@ui == 130){getitem 2729, 1; dispbottom "Найдено: Diabolus Ring [1]";}
+				else if (@ui == 131){getitem 2622, 1; dispbottom "Найдено: Earring [1]";}
+				else if (@ui == 132){getitem 2602, 1; dispbottom "Найдено: Earring";}
+				else if (@ui == 133){getitem 2703, 1; dispbottom "Найдено: Expert Ring [1]";}
+				else if (@ui == 134){getitem 2604, 1; dispbottom "Найдено: Glove";}
+				else if (@ui == 135){getitem 2624, 1; dispbottom "Найдено: Glove [1]";}
+				else if (@ui == 136){getitem 2652, 1; dispbottom "Найдено: Goddess of Fortune's Cursed Brooch";}
+				else if (@ui == 137){getitem 2749, 1; dispbottom "Найдено: Linen Glove [1]";}
+				else if (@ui == 138){getitem 2649, 1; dispbottom "Найдено: Morpheus's Bracelet";}
+				else if (@ui == 139){getitem 2648, 1; dispbottom "Найдено: Morpheus's Ring";}
+				else if (@ui == 140){getitem 2623, 1; dispbottom "Найдено: Necklace [1]";}
+				else if (@ui == 141){getitem 2603, 1; dispbottom "Найдено: Necklace";}
+				else if (@ui == 142){getitem 2701, 1; dispbottom "Найдено: Orleans's Glove [1]";}
+				else if (@ui == 143){getitem 2745, 1; dispbottom "Найдено: Pinguicula Corsage [1]";}
+				else if (@ui == 144){getitem 2717, 1; dispbottom "Найдено: Pocket Watch";}
+				else if (@ui == 145){getitem 2601, 1; dispbottom "Найдено: Ring";}
+				else if (@ui == 146){getitem 2621, 1; dispbottom "Найдено: Ring [1]";}
+				else if (@ui == 147){getitem 2731, 1; dispbottom "Найдено: Rune Spellstone [1]";}
+				else if (@ui == 148){getitem 2626, 1; dispbottom "Найдено: Rosary [1]";}
+				else if (@ui == 149){getitem 2615, 1; dispbottom "Найдено: Safety Ring";}
+				else if (@ui == 150){getitem 2659, 1; dispbottom "Найдено: Vesper Core 01";}
+				else if (@ui == 151){getitem 2660, 1; dispbottom "Найдено: Vesper Core 02";}
+				else if (@ui == 152){getitem 2661, 1; dispbottom "Найдено: Vesper Core 03";}
+				else if (@ui == 153){getitem 2662, 1; dispbottom "Найдено: Vesper Core 04";}
+				else if (@ui == 154){getitem 1573, 1; dispbottom "Найдено: Ancient Magic [2]";}
+				else if (@ui == 155){getitem 1232, 1; dispbottom "Найдено: Assassin Dagger";}
+				else if (@ui == 156){getitem 1235, 1; dispbottom "Найдено: Azoth";}
+				else if (@ui == 157){getitem 1175, 1; dispbottom "Найдено: Atlas Weapon [1]";}
+				else if (@ui == 158){getitem 1722, 1; dispbottom "Найдено: Ballista";}
+				else if (@ui == 159){getitem 1421, 1; dispbottom "Найдено: Battle Hook [1]";}
+				else if (@ui == 160){getitem 1231, 1; dispbottom "Найдено: Bazerald";}
+				else if (@ui == 161){getitem 1375, 1; dispbottom "Найдено: Berdysz [2]";}
+				else if (@ui == 162){getitem 1271, 1; dispbottom "Найдено: Blood Tears [2]";}
+				else if (@ui == 163){getitem 1363, 1; dispbottom "Найдено: Bloody Axe";}
+				else if (@ui == 164){getitem 1265, 1; dispbottom "Найдено: Bloody Roar";}
+				else if (@ui == 165){getitem 1730, 1; dispbottom "Найдено: Burning Bow [1]";}
+				else if (@ui == 166){getitem 1140, 1; dispbottom "Найдено: Byeollungum";}
+				else if (@ui == 167){getitem 1134, 1; dispbottom "Найдено: Caesar's Sword";}
+				else if (@ui == 168){getitem 1822, 1; dispbottom "Найдено: Combo Battle Glove [4]";}
+				else if (@ui == 169){getitem 1466, 1; dispbottom "Найдено: Crescent Scythe";}
+				else if (@ui == 170){getitem 1647, 1; dispbottom "Найдено: Croce Staff [1]";}
+				else if (@ui == 171){getitem 1741, 1; dispbottom "Найдено: Cursed Lyre [1]";}
+				else if (@ui == 172){getitem 1241, 1; dispbottom "Найдено: Cursed Dagger";}
+				else if (@ui == 173){getitem 13405, 1; dispbottom "Найдено: Curved Sword [2]";}
+				else if (@ui == 174){getitem 1135, 1; dispbottom "Найдено: Cutlus";}
+				else if (@ui == 175){getitem 13038, 1; dispbottom "Найдено: Dagger of Hunter [3]";}
+				else if (@ui == 176){getitem 2005, 1; dispbottom "Найдено: Dea Staff [1]";}
+				else if (@ui == 177){getitem 1370, 1; dispbottom "Найдено: Doom Slayer";}
+				else if (@ui == 178){getitem 1736, 1; dispbottom "Найдено: Double Bound [3]";}
+				else if (@ui == 179){getitem 1732, 1; dispbottom "Найдено: Earth Bow [1]";}
+				else if (@ui == 180){getitem 1731, 1; dispbottom "Найдено: Frozen Bow [1]";}
+				else if (@ui == 181){getitem 1387, 1; dispbottom "Найдено: Giant Axe [1]";}
+				else if (@ui == 182){getitem 1237, 1; dispbottom "Найдено: Grimtooth";}
+				else if (@ui == 183){getitem 13015, 1; dispbottom "Найдено: Hakujin [1]";}
+				else if (@ui == 184){getitem 1230, 1; dispbottom "Найдено: Ice Pick";}
+				else if (@ui == 185){getitem 1131, 1; dispbottom "Найдено: Ice Falchion";}
+				else if (@ui == 186){getitem 1261, 1; dispbottom "Найдено: Infiltrator";}
+				else if (@ui == 187){getitem 1266, 1; dispbottom "Найдено: Infiltrator [1]";}
+				else if (@ui == 188){getitem 13046, 1; dispbottom "Найдено: Krierg [3]";}
+				else if (@ui == 189){getitem 1189, 1; dispbottom "Найдено: Krasnaya [3]";}
+				else if (@ui == 190){getitem 1284, 1; dispbottom "Найдено: Krishna [2]";}
+				else if (@ui == 191){getitem 2004, 1; dispbottom "Найдено: Kronos";}
+				else if (@ui == 192){getitem 1646, 1; dispbottom "Найдено: La'cryma Stick [2]";}
+				else if (@ui == 193){getitem 1624, 1; dispbottom "Найдено: Lich's Bone Wand [2]";}
+				else if (@ui == 194){getitem 1366, 1; dispbottom "Найдено: Light Epsilon";}
+				else if (@ui == 195){getitem 13164, 1; dispbottom "Найдено: Long Barrel [1]";}
+				else if (@ui == 196){getitem 1544, 1; dispbottom "Найдено: Lunakaligo [3]";}
+				else if (@ui == 197){getitem 1165, 1; dispbottom "Найдено: Masamune";}
+				else if (@ui == 198){getitem 1225, 1; dispbottom "Найдено: Mailbreaker";}
+				else if (@ui == 199){getitem 13032, 1; dispbottom "Найдено: Mailbreaker [3]";}
+				else if (@ui == 200){getitem 1234, 1; dispbottom "Найдено: Moonlight Dagger";}
+				else if (@ui == 201){getitem 13013, 1; dispbottom "Найдено: Murasame [2]";}
+				else if (@ui == 202){getitem 1417, 1; dispbottom "Найдено: Pole Axe [1]";}
+				else if (@ui == 203){getitem 13404, 1; dispbottom "Найдено: Platinum Shotel [1]";}
+				else if (@ui == 204){getitem 1572, 1; dispbottom "Найдено: Principles of Magic [2]";}
+				else if (@ui == 205){getitem 1264, 1; dispbottom "Найдено: Specialty Jur [4]";}
+				else if (@ui == 206){getitem 1523, 1; dispbottom "Найдено: Spike";}
+				else if (@ui == 207){getitem 1532, 1; dispbottom "Найдено: Stunner [2]";}
+				else if (@ui == 208){getitem 1224, 1; dispbottom "Найдено: Swordbreaker";}
+				else if (@ui == 209){getitem 13031, 1; dispbottom "Найдено: Swordbreaker [3]";}
+				else if (@ui == 210){getitem 1139, 1; dispbottom "Найдено: Tirfing";}
+				else if (@ui == 211){getitem 1311, 1; dispbottom "Найдено: Vecer Axe [2]";}
+				else if (@ui == 212){getitem 1384, 1; dispbottom "Найдено: Veteran Axe [2]";}
+				else if (@ui == 213){getitem 1188, 1; dispbottom "Найдено: Veteran Sword [1]";}
+				else if (@ui == 214){getitem 1548, 1; dispbottom "Найдено: Veteran Hammer [2]";}
+				else if (@ui == 215){getitem 1306, 1; dispbottom "Найдено: War Axe [1]";}
+				else if (@ui == 216){getitem 1473, 1; dispbottom "Найдено: Wizardry Staff";}
+				else if (@ui == 217){getitem 1307, 1; dispbottom "Найдено: Windhawk";}
+				else if (@ui == 218){getitem 1616, 1; dispbottom "Найдено: Wing Staff";}
+				else if (@ui == 219){getitem 1238, 1; dispbottom "Найдено: Zeny Knife";}
+				else if (@ui == 220){getitem 1468, 1; dispbottom "Найдено: Zephyrus";}
+				else if (@ui == 221){getitem 1481, 1; dispbottom "Найдено: Zephyrus [3]";}
+				else if (@ui == 222){getitem 1168, 1; dispbottom "Найдено: Zweihander";}
+				else if (@ui == 223){getitem 1171, 1; dispbottom "Найдено: Zweihander [2]";}
+				else if (@ui == 224){getitem 1980, 1; dispbottom "Найдено: Whip of Balance [3]";}
+				else if (@ui == 225){getitem 1926, 1; dispbottom "Найдено: Harp of Nepenthes [2]";}}
+	return;
+}
