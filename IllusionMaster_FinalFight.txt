@@ -1,48 +1,94 @@
-prontera,150,150,0	script	IllusionMaster 123,{
+prt_fild08,265,100,4	script	IllusionMaster	951,3,3,{
+
+	function createAndMoveUnit;
+	function createAndMoveSimpleWall;
+	function checkFunc;
+
+	//monster "prt_fild08",260,100,"0",1115,1,0,0,0;
+	monster "prt_fild08",259,101,"1",1115,1,0,0,1;
+	end;
+	//monster "prt_fild08",264,100,"2",1001,1,0,0,2;
+	//monster "prt_fild08",264,100,"3",1001,1,0,0,3;
+	//monster "prt_fild08",264,100,"4",1001,1,0,0,4;
+	//monster "prt_fild08",264,100,"5",1001,1,0,0,5;
+	//monster "prt_fild08",264,100,"6",1001,1,0,0,6;
+
+	stopnpctimer;
+	attachnpctimer;
+	initnpctimer;
+	//dispbottom "initnpctimer";
+	//createAndMoveUnit(.UP, 0);
+	//createAndMoveUnit(.LEFT, 8);
+	end;
+
+	OnTimer3000:
+		dispbottom "3 seconds later...";
+		createAndMoveUnit(.DOWN, -5);    
+		end;
+	OnTimer6500:
+		dispbottom "6.5 seconds later...";
+		createAndMoveUnit(.DOWN, 3);    
+		end;
+	OnTimer10500:
+		dispbottom "10.5 seconds later...";
+		createAndMoveUnit(.RIGHT, 4);    
+		end;
+	OnTimer14000:
+		dispbottom "14 seconds later...";
+		createAndMoveSimpleWall(.RIGHT, -6, 6);    
+		end;
+	OnTimer15500:
+		dispbottom "15.5 seconds later...";
+		createAndMoveSimpleWall(.UP, -2, 5);    
+		end;        
+
+	OnTimer16500:
+		dispbottom "15.5 seconds later...";
+		createAndMoveSimpleWall(.LEFT, 3, 4);    
+		end;    
+	OnTimer17500:
+		dispbottom "15.5 seconds later...";
+		createAndMoveSimpleWall(.DOWN, -5, 5);    
+		end;    
+	OnTimer18500:
+		dispbottom "15.5 seconds later...";
+		createAndMoveSimpleWall(.LEFT, 0, 7);    
+		end;    
+
+	stopnpctimer;
+	end;
+
 	OnInit:
-		function createAndMoveUnit;
 		//constants
 		.FIELD_HEIGHT = 16;
 		.FIELD_WIDTH = 16;
 		getmapxy(.CURRENT_MAP$, .FIELD_CENTER_X, .FIELD_CENTER_Y, UNITTYPE_NPC, strnpcinfo(0));
-		.FIELD_CENTER_Y -= .FIELD_HEIGHT;
+		.FIELD_CENTER_Y -= .FIELD_HEIGHT/2 + 1;
 		.RIGHT = 0;
 		.DOWN = 1;
 		.LEFT = 2;
 		.UP = 3;
 		end;
 
-	initnpctimer;
-
-	OnTimer3000:
-		createAndMoveUnit(.DOWN, -5);    
-		end;
-	OnTimer6500:
-		createAndMoveUnit(.DOWN, 3);    
-		end;
-	OnTimer105000:
-		createAndMoveUnit(.RIGHT, 0, 4);    
-		end;
-	OnTimer14000:
-		createAndMoveSimpleWall(.RIGHT, -6, 6);    
-		end;
-	OnTimer15500:
-		createAndMoveSimpleWall(.UP, -2, 5);    
-		end;        
-
-	stopnpctimer;
-
+	function	checkFunc	{
+		.@value1$ = getarg(0);
+		.@value2$ = getarg(1);
+		dispbottom .@value1$;
+		dispbottom .@value2$;
+	}
 
 	/* Function definition */
 	function	createAndMoveUnit	{
 		//constants
-		.@DEFAULT_MONSTER_ID = 1002;
+		.@DEFAULT_MONSTER_ID = 1905;
 		.@DEFAULT_NAME$ = "Unit";
 
 		.@direction = getarg(0);
 		.@startCoord = getarg(1);
-		.@name$ = getargcount() > 2 ? getarg(2) : .@DEFAULT_NAME$;
-		.@monsterId = getargcount() > 3 ? getarg(3) : .@DEFAULT_MONSTER_ID;
+		//.@name$ = getargcount() > 2 ? getarg(2) : .@DEFAULT_NAME$;
+		//.@monsterId = getargcount() > 3 ? getarg(3) : .@DEFAULT_MONSTER_ID;
+		.@name$ = .@DEFAULT_NAME$;
+		.@monsterId = .@DEFAULT_MONSTER_ID;
 
 		.@startX = .FIELD_CENTER_X;
 		.@startY = .FIELD_CENTER_Y;
@@ -51,89 +97,97 @@ prontera,150,150,0	script	IllusionMaster 123,{
 
 		switch( .@direction ) {
 		   case 0: //RIGHT
-			   .@startX -=  .FIELD_WIDTH;  
+			   .@startX -=  .FIELD_WIDTH/2;  
 			   .@startY += .@startCoord; 
-			   .@endX += .FIELD_WIDTH;   
+			   .@endX += .FIELD_WIDTH/2;   
 			   .@endY = .@startY;
-		   end; 
+		   break; 
 		   case 1: //DOWN
 			   .@startX += .@startCoord;
-			   .@startY += .FIELD_HEIGHT; 
+			   .@startY += .FIELD_HEIGHT/2; 
 			   .@endX = .@startX;
-			   .@endY -= .FIELD_HEIGHT;   
-		   end; 
+			   .@endY -= .FIELD_HEIGHT/2;   
+		   break; 
 		   case 2: //LEFT
-			   .@startX +=  .FIELD_WIDTH;  
+			   .@startX +=  .FIELD_WIDTH/2;  
 			   .@startY += .@startCoord; 
-			   .@endX -= .FIELD_WIDTH;   
+			   .@endX -= .FIELD_WIDTH/2;   
 			   .@endY = .@startY;
-		   end; 
+		   break; 
 		   case 3: //UP
 			   .@startX += .@startCoord;
-			   .@startY -= .FIELD_HEIGHT; 
+			   .@startY -= .FIELD_HEIGHT/2; 
 			   .@endX = .@startX;
-			   .@endY += .FIELD_HEIGHT; 
-		   end; 
+			   .@endY += .FIELD_HEIGHT/2; 
+		   break; 
 		}
 
+		dispbottom  ".CURRENT_MAP$ " + .CURRENT_MAP$;
+		dispbottom  ".@startX " + .@startX;
+		dispbottom  ".@startY " + .@startY;
+		dispbottom  ".@name$ " + .@name$;
+		dispbottom  ".@monsterId " + .@monsterId;
 		monster .CURRENT_MAP$,.@startX,.@startY,.@name$,.@monsterId,1;
 		.@gid = $@mobid[0];
 		unitwalk .@gid,.@endX,.@endY;
-		unitkill .@gid;
+		//sleep(1700);
+		//unitkill .@gid;
 		return .@gid;
 	}
 
 	function	createAndMoveSimpleWall	{
 		//constants
-		.@DEFAULT_MONSTER_ID = 1002;
-		.@DEFAULT_NAME$ = "Unit";
+		.@DEFAULT_MONSTER_ID = 2058;
+		.@DEFAULT_NAME$ = "WallUnit";
 
 		.@direction = getarg(0);
 		.@startCoord = getarg(1);
 		.@lenght = getarg(2);
-		.@name$ = getargcount() > 3 ? getarg(3) : .@DEFAULT_NAME;
-		.@monsterId = getargcount() > 4 ? getarg(4) : .@DEFAULT_MONSTER_ID
+		//.@name$ = getargcount() > 3 ? getarg(3) : .@DEFAULT_NAME;
+		//.@monsterId = getargcount() > 4 ? getarg(4) : .@DEFAULT_MONSTER_ID;
+		.@name$ = .@DEFAULT_NAME;
+		.@monsterId = .@DEFAULT_MONSTER_ID;
 
 		switch( .@direction ) {
 		   case 0: //RIGHT
-			   .@startX -= .FIELD_WIDTH;  
+			   .@startX -= .FIELD_WIDTH/2;  
 			   .@startY += .@startCoord; 
-			   .@endX += .FIELD_WIDTH;   
+			   .@endX += .FIELD_WIDTH/2;   
 			   .@endY = .@startY;
 			   for ( .@monsterNumber = 0; .@monsterNumber < .@lenght; .@monsterNumber++){
 					createAndMoveUnit(.@direction, .@startY + .@monsterNumber, .@name$, .@monsterId);
 				}		
-		   end; 
+		   break; 
 		   case 1: //DOWN
 			   .@startX += .@startCoord;
-			   .@startY += .FIELD_HEIGHT; 
+			   .@startY += .FIELD_HEIGHT/2; 
 			   .@endX = .@startX;
-			   .@endY -= .FIELD_HEIGHT;   
+			   .@endY -= .FIELD_HEIGHT/2;   
 			   for ( .@monsterNumber = 0; .@monsterNumber < .@lenght; .@monsterNumber++){
 					createAndMoveUnit(.@direction, .@startX + .@monsterNumber, .@name$, .@monsterId);
 				}		
-		   end; 
+		   break; 
 		   case 2: //LEFT
-			   .@startX +=  .FIELD_WIDTH;  
+			   .@startX +=  .FIELD_WIDTH/2;  
 			   .@startY += .@startCoord; 
-			   .@endX -= .FIELD_WIDTH;   
+			   .@endX -= .FIELD_WIDTH/2;   
 			   .@endY = .@startY;
 			   for ( .@monsterNumber = 0; .@monsterNumber < .@lenght; .@monsterNumber++){
 					createAndMoveUnit(.@direction, .@startY + .@monsterNumber, .@name$, .@monsterId);
 				}	
-		   end; 
+		   break; 
 		   case 3: //UP
 			   .@startX += .@startCoord;
-			   .@startY -= .FIELD_HEIGHT; 
+			   .@startY -= .FIELD_HEIGHT/2; 
 			   .@endX = .@startX;
-			   .@endY += .FIELD_HEIGHT; 
+			   .@endY += .FIELD_HEIGHT/2; 
 			   	for ( .@monsterNumber = 0; .@monsterNumber < .@lenght; .@monsterNumber++){
 					createAndMoveUnit(.@direction, .@startX + .@monsterNumber, .@name$, .@monsterId);
 				}	
-		   end; 
+		   break; 
 		}
 	}
 }
 
-function    script    rotateMonsters    {    
-}
+//function    script    rotateMonsters    {    
+//}
