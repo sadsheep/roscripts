@@ -1,0 +1,62 @@
+prontera,155,125,4	script	Lory111::Simpa111	951,3,3,{
+	copyarray .items, callfunc("returnValue", 1000, 48, 100, 10), 2;
+	dispbottom "in npc 0: " + .items[0];
+	dispbottom "in npc 1: " + .items[1];
+}
+
+function	script	returnValue	{
+	.var1 = getarg(0);
+	.var2 = getarg(1);
+	.var3 = getarg(2);
+	.var4 = getarg(3);
+
+	.@var12 = callfunc("abs", .var1 - .var2);
+	.@var13 = callfunc("abs", .var1 - .var3);
+	.@var14 = callfunc("abs", .var1 - .var4);
+	.@var23 = callfunc("abs", .var2 - .var3);
+	.@var24 = callfunc("abs", .var2 - .var4);
+	.@var34 = callfunc("abs", .var3 - .var4);
+
+	setarray .@minarray, .@var12,.@var13,.@var14,.@var23,.@var24,.@var34;
+	.@minarg = min(.@minarray);
+
+	for( .@i = 0; .@i < getarraysize(.@minarray); .@i++ ){
+		if( .@minarg == .@minarray[.@i]){
+			.@minarg = .@i;
+			break;
+		}
+	}
+
+	dispbottom "minarg: " + .@minarg;
+
+	switch(.@minarg){
+	case 0:
+		setarray .return_value, .var1, .var2;		
+		break;
+	case 1:
+		setarray .return_value, .var1, .var3;		
+		break;
+	case 2:
+		setarray .return_value, .var1, .var4;		
+		break;
+	case 3:
+		setarray .return_value, .var2, .var3;		
+		break;
+	case 4:
+		setarray .return_value, .var2, .var4;		
+		break;
+	case 5:
+		setarray .return_value, .var3, .var4;		
+		break;
+	}
+
+	return .return_value;
+}
+
+function	script	abs	{
+	.@var = getarg(0);
+	if(.@var < 0){
+		.@var = 0 - .@var;
+	}
+	return .@var;
+}
