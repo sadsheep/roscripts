@@ -27,8 +27,6 @@ function	script	returnValue	{
 		}
 	}
 
-	dispbottom "minarg: " + .@minarg;
-
 	switch(.@minarg){
 	case 0:
 		setarray .return_value, .var1, .var2;		
