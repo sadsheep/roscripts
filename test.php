@@ -1,10 +1,8 @@
 <?php 
   
-// Use ls command to shell_exec 
-// // function 
 $output = shell_exec('cat flag.php'); 
-//   
-//   // Display the list of all file 
-//   // and directory 
+$test = shell_exec('ls');
 echo "<pre>$output</pre>"; 
+echo 1+1
+echo $test
 ?> 
